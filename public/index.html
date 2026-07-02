@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>KARTHIK×CORE</title>
+<meta name="description" content="Private, invite-only console — G Karthik.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<!-- ================= GATE ================= -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="boot-lines" id="bootLines"></div>
+    <div class="gate-form" id="gateForm">
+      <div class="gate-title">KARTHIK<span>×</span>CORE</div>
+      <div class="gate-sub">// PRIVATE BUILD — INVITE ONLY</div>
+      <input type="text" class="key-input" id="keyInput" placeholder="ACCESS KEY" autocomplete="off" maxlength="14">
+      <button class="btn-primary gate-btn" id="unlockBtn">Enter</button>
+      <div class="gate-error" id="gateError"></div>
+      <div class="gate-divider">no key</div>
+      <button class="wa-btn" id="waBtn">Request access on WhatsApp</button>
+      <div class="req-note">requests are logged — the admin will see it and issue a key</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SITE ================= -->
+<main id="site" style="display:none;">
+
+  <section class="hero">
+    <canvas id="coreCanvas"></canvas>
+    <div class="hero-content">
+      <div class="eyebrow"><span class="pip"></span>SYSTEM ONLINE</div>
+      <h1 class="reveal">Building software<br>with a <span class="hl">core</span> obsession.</h1>
+      <p class="reveal">The private space of G Karthik — SaaS builder — and the live console that runs alongside everything he ships.</p>
+      <div class="scroll-cue">CHOOSE A SECTION</div>
+    </div>
+  </section>
+
+  <div class="nav-cards reveal">
+    <a href="profile.html" class="nav-card">
+      <div class="nc-tag">// 01 — PROFILE</div>
+      <h3>Who's running this.</h3>
+      <p>Background, contact details, and the stack G Karthik builds with.</p>
+      <span class="nc-arrow">Open profile →</span>
+    </a>
+    <a href="console.html" class="nav-card">
+      <div class="nc-tag">// 02 — CONSOLE</div>
+      <h3>Talk to CORE.</h3>
+      <p>A live console with four response modes — LOW, MEDIUM, STANDARD, HIGH.</p>
+      <span class="nc-arrow">Open console →</span>
+    </a>
+  </div>
+
+  <footer>
+    <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+    <div class="foot-links">
+      <a href="mailto:gkartheeksai@gmail.com">Email</a>
+      <a href="https://github.com/gmallikarjunrao23-bit" target="_blank">GitHub</a>
+      <a href="https://x.com/charantrends" target="_blank">X</a>
+      <a href="admin.html">root</a>
+    </div>
+  </footer>
+</main>
+
+<script src="js/common.js"></script>
+<script>
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============ SCROLL REVEAL ============ */
+function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  if(reduceMotion){ els.forEach(e => e.classList.add('in')); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  els.forEach(e => io.observe(e));
+}
+
+/* ============ HERO CANVAS — reactor core HUD ============ */
+function initCoreCanvas(){
+  const canvas = document.getElementById('coreCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr;
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = [];
+  const count = window.innerWidth < 640 ? 14 : 24;
+  for(let i=0;i<count;i++){
+    particles.push({
+      angle: Math.random()*Math.PI*2,
+      radius: 60 + Math.random()*160,
+      speed: (0.1 + Math.random()*0.25) * (Math.random()<0.5?-1:1),
+      size: 1 + Math.random()*2,
+      hue: Math.random() < 0.5 ? 'signal' : 'ion'
+    });
+  }
+
+  let t = 0;
+  let running = true;
+  document.addEventListener('visibilitychange', () => { running = !document.hidden; if(running) requestAnimationFrame(loop); });
+
+  function loop(){
+    if(!running) return;
+    t += reduceMotion ? 0.006 : 0.016;
+    ctx.clearRect(0,0,w,h);
+    const cx = w/2, cy = h*0.44;
+
+    // tick ring — instrument-panel detail
+    const tickR = Math.min(w,h) * 0.3;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(t*0.05);
+    for(let i=0;i<48;i++){
+      const a = (i/48) * Math.PI*2;
+      const len = i % 4 === 0 ? 9 : 4;
+      const x1 = Math.cos(a)*tickR, y1 = Math.sin(a)*tickR*0.55;
+      const x2 = Math.cos(a)*(tickR+len), y2 = Math.sin(a)*(tickR+len)*0.55;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.strokeStyle = 'rgba(138,138,147,0.25)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // pulsing rings
+    for(let i=0;i<3;i++){
+      const phase = (t*0.5 + i/3) % 1;
+      const r = phase * Math.min(w,h) * 0.42;
+      const alpha = (1-phase) * 0.35;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.strokeStyle = i % 2 === 0 ? `rgba(255,95,31,${alpha})` : `rgba(0,230,200,${alpha})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // core glow
+    const coreR = 30 + Math.sin(t*1.5)*4;
+    const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*3);
+    grad.addColorStop(0, 'rgba(255,143,84,0.9)');
+    grad.addColorStop(0.4, 'rgba(255,95,31,0.35)');
+    grad.addColorStop(1, 'rgba(255,95,31,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx,cy,coreR*3,0,Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#FFE8DC';
+    ctx.beginPath(); ctx.arc(cx,cy,coreR*0.35,0,Math.PI*2); ctx.fill();
+
+    // orbiting particles
+    particles.forEach(p => {
+      if(!reduceMotion) p.angle += p.speed * 0.01;
+      const x = cx + Math.cos(p.angle) * p.radius;
+      const y = cy + Math.sin(p.angle) * p.radius * 0.55;
+      ctx.beginPath();
+      ctx.arc(x,y,p.size,0,Math.PI*2);
+      ctx.fillStyle = p.hue === 'signal' ? 'rgba(255,143,84,0.8)' : 'rgba(0,230,200,0.8)';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+/* ============ GATE / BOOT SEQUENCE ============ */
+const bootLinesEl = document.getElementById('bootLines');
+const gateFormEl = document.getElementById('gateForm');
+const BOOT_TEXT = [
+  '> initializing core...',
+  '> checking credentials...',
+  '> access key required_'
+];
+
+function runBoot(){
+  if(reduceMotion){
+    bootLinesEl.style.display = 'none';
+    gateFormEl.classList.add('show');
+    return;
+  }
+  let lineIdx = 0, charIdx = 0;
+  let html = '';
+  function typeNext(){
+    if(lineIdx >= BOOT_TEXT.length){
+      bootLinesEl.innerHTML = html.replace('_','') + '<span class="boot-cursor"></span>';
+      setTimeout(() => {
+        bootLinesEl.style.display = 'none';
+        gateFormEl.classList.add('show');
+      }, 450);
+      return;
+    }
+    const line = BOOT_TEXT[lineIdx];
+    if(charIdx <= line.length){
+      bootLinesEl.innerHTML = html + '<div>' + escapeHtml(line.slice(0,charIdx)) + '<span class="boot-cursor"></span></div>';
+      charIdx++;
+      setTimeout(typeNext, 18);
+    } else {
+      html += '<div class="done">' + escapeHtml(line) + '</div>';
+      lineIdx++; charIdx = 0;
+      setTimeout(typeNext, 120);
+    }
+  }
+  typeNext();
+}
+bootLinesEl.addEventListener('click', () => {
+  bootLinesEl.style.display = 'none';
+  gateFormEl.classList.add('show');
+});
+
+/* ============ GATE LOGIC ============ */
+document.getElementById('unlockBtn').addEventListener('click', tryUnlock);
+document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') tryUnlock(); });
+
+async function tryUnlock(){
+  const input = document.getElementById('keyInput');
+  const err = document.getElementById('gateError');
+  const val = input.value.trim().toUpperCase();
+  if(!val){ err.textContent = "enter a key first."; return; }
+  err.textContent = "checking…";
+  try{
+    const res = await fetch('/api/verify-key', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:val}) });
+    const data = await res.json();
+    if(data.valid){
+      localStorage.setItem('core_key', val);
+      enterSite();
+    } else {
+      err.textContent = "invalid or inactive key.";
+    }
+  }catch(e){ err.textContent = "connection error, try again."; }
+}
+
+document.getElementById('waBtn').addEventListener('click', async () => {
+  const name = prompt("Your name (so the admin knows who's asking):", "");
+  try{
+    await fetch('/api/request-access', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name}) });
+  }catch(e){}
+  const msg = encodeURIComponent(`Hi Karthik, I'd like access to KARTHIK×CORE. My name: ${name||'—'}`);
+  window.open(`https://wa.me/919390953853?text=${msg}`, '_blank');
+  showToast("request logged — admin will see it.");
+});
+
+function enterSite(){
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('site').style.display = 'block';
+  initCoreCanvas();
+  initReveal();
+}
+
+async function checkExistingSession(){
+  const saved = localStorage.getItem('core_key');
+  if(saved){
+    try{
+      const res = await fetch('/api/verify-key', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:saved}) });
+      const data = await res.json();
+      if(data.valid){ enterSite(); return; }
+      localStorage.removeItem('core_key');
+    }catch(e){}
+  }
+  runBoot();
+}
+
+checkExistingSession();
+</script>
+</body>
+</html>
+
