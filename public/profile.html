@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Profile — KARTHIK×CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div class="loading-shell" id="loadingShell"><span class="mono">// verifying access…</span></div>
+
+<div id="pageContent" style="display:none;">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark"></span>KARTHIK<span class="x">×</span>CORE</div>
+    <nav class="app-nav">
+      <a href="profile.html">PROFILE</a>
+      <a href="console.html">CONSOLE</a>
+    </nav>
+    <div class="status-pip"><span class="dot"></span><span>ACCESS VERIFIED</span><button class="signout mono" id="signOutBtn">sign out</button></div>
+  </header>
+
+  <main>
+    <section>
+      <div class="page-head reveal">
+        <div class="tag">[PROFILE]</div>
+        <h1>Who's running this.</h1>
+      </div>
+      <div class="reveal">
+        <div class="id-card">
+          <div class="avatar">GK</div>
+          <div>
+            <div class="id-name">G Karthik</div>
+            <div class="id-role">SAAS BUILDER</div>
+          </div>
+        </div>
+        <p class="bio">G Karthik is a self-taught software developer whose fascination with code began at just ten years old. What started as childhood curiosity has grown into a disciplined craft — designing and shipping full-stack SaaS products end-to-end, from database architecture to pixel-perfect interfaces. He blends technical precision with an entrepreneurial drive, turning ambitious ideas into real, working software.</p>
+        <div class="spec-grid">
+          <div class="spec-card"><div class="spec-label">EMAIL</div><a class="spec-value" href="mailto:gkartheeksai@gmail.com">gkartheeksai@gmail.com</a></div>
+          <div class="spec-card"><div class="spec-label">WHATSAPP</div><a class="spec-value" href="https://wa.me/919390953853" target="_blank">+91 93909 53853</a></div>
+          <div class="spec-card"><div class="spec-label">GITHUB</div><a class="spec-value" href="https://github.com/gmallikarjunrao23-bit" target="_blank">gmallikarjunrao23-bit</a></div>
+          <div class="spec-card"><div class="spec-label">X / TWITTER</div><a class="spec-value" href="https://x.com/charantrends" target="_blank">@charantrends</a></div>
+        </div>
+        <div class="stack-row">
+          <span class="stack-pill">Node.js</span>
+          <span class="stack-pill">Python</span>
+          <span class="stack-pill">FastAPI</span>
+          <span class="stack-pill">PostgreSQL</span>
+          <span class="stack-pill">SQLite</span>
+          <span class="stack-pill">Render / Railway</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="console.html">Console</a>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+(async function(){
+  const key = await requireAccessKey();
+  if(!key) return;
+  document.getElementById('loadingShell').style.display = 'none';
+  document.getElementById('pageContent').style.display = 'block';
+  markActiveNav();
+  wireSignOut();
+  document.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+})();
+</script>
+</body>
+</html>
