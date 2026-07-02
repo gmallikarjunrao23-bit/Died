@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Root — KARTHIK×CORE</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div class="admin-shell">
+  <div class="admin-login" id="adminLogin">
+    <div class="gate-title" style="font-size:1.3rem;">root access</div>
+    <div class="gate-sub">// AUTHENTICATION REQUIRED</div>
+    <input type="password" class="key-input" id="adminPass" placeholder="PASSWORD" autocomplete="off">
+    <button class="btn-primary gate-btn" id="adminLoginBtn">Enter</button>
+    <div class="gate-error" id="adminError"></div>
+    <a href="index.html" class="btn-ghost" style="display:block; text-align:center; margin-top:14px;">← back to site</a>
+  </div>
+
+  <div class="admin-panel" id="adminPanel" style="display:none;">
+    <div class="admin-topbar">
+      <h1>root@karthik-core</h1>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-ghost" id="refreshBtn">refresh</button>
+        <a href="index.html" class="btn-ghost">exit</a>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h4>Pending Requests <span class="count" id="pendingCount">0</span></h4>
+        <div id="pendingList"></div>
+      </div>
+      <div class="admin-card">
+        <h4>Issued Keys <span class="count" id="keysCount">0</span></h4>
+        <div id="keysList"></div>
+      </div>
+    </div>
+
+    <div class="admin-card" style="margin-top:18px;">
+      <h4>Manually Issue a Key</h4>
+      <div class="manual-add">
+        <input type="text" id="manualName" placeholder="issued to (name/label)" maxlength="100">
+        <button class="pill-btn" id="manualIssueBtn" style="padding:11px 18px;">Generate</button>
+      </div>
+      <div id="manualResult"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+let adminPassCache = null;
+
+document.getElementById('adminLoginBtn').addEventListener('click', tryAdminLogin);
+document.getElementById('adminPass').addEventListener('keydown', e => { if(e.key==='Enter') tryAdminLogin(); });
+document.getElementById('manualIssueBtn').addEventListener('click', manualIssue);
+document.getElementById('refreshBtn').addEventListener('click', refreshAdmin);
+
+async function tryAdminLogin(){
+  const val = document.getElementById('adminPass').value;
+  const err = document.getElementById('adminError');
+  err.textContent = 'checking…';
+  try{
+    const res = await fetch('/api/admin-login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:val}) });
+    if(res.status === 429){ err.textContent = 'too many attempts — wait a few minutes.'; return; }
+    const data = await res.json();
+    if(data.ok){ adminPassCache = val; showAdminPanel(); }
+    else { err.textContent = "wrong password."; }
+  }catch(e){ err.textContent = "connection error."; }
+}
+
+function showAdminPanel(){
+  document.getElementById('adminLogin').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  refreshAdmin();
+}
+
+async function refreshAdmin(){
+  const pendingWrap = document.getElementById('pendingList');
+  const keysWrap = document.getElementById('keysList');
+  pendingWrap.innerHTML = '<div class="empty-admin">loading…</div>';
+  keysWrap.innerHTML = '<div class="empty-admin">loading…</div>';
+
+  const res = await fetch('/api/admin-data', { headers:{'x-admin-pass':adminPassCache} });
+  if(res.status === 401){
+    showToast('session expired — log in again.');
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('adminLogin').style.display = 'block';
+    return;
+  }
+  const data = await res.json();
+  const pending = data.pending || [];
+  // FIX: only active (non-revoked) keys are shown in the panel now.
+  // Revoked keys still exist in the DB (server.js keeps them for audit/
+  // history purposes, it never deletes), we just stop rendering them here.
+  const allKeys = data.keys || [];
+  const keys = allKeys.filter(k => k.active);
+
+  document.getElementById('pendingCount').textContent = pending.length;
+  document.getElementById('keysCount').textContent = keys.length;
+
+  if(pending.length === 0){
+    pendingWrap.innerHTML = '<div class="empty-admin">no pending requests.</div>';
+  } else {
+    pendingWrap.innerHTML = '';
+    pending.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'admin-row';
+      row.innerHTML = `<div><div>${escapeHtml(p.name)}</div><div class="meta">${new Date(p.timestamp).toLocaleString()}</div></div>
+        <button class="pill-btn" data-req="${p.id}" data-name="${escapeHtml(p.name)}">Issue Key</button>`;
+      pendingWrap.appendChild(row);
+    });
+    pendingWrap.querySelectorAll('button[data-req]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const reqId = btn.getAttribute('data-req');
+        const name = btn.getAttribute('data-name');
+        const r = await fetch('/api/admin-issue-key', { method:'POST', headers:{'Content-Type':'application/json','x-admin-pass':adminPassCache}, body:JSON.stringify({name, requestId:reqId}) });
+        const d = await r.json();
+        showToast(`key issued: ${d.key}`);
+        refreshAdmin();
+      });
+    });
+  }
+
+  if(keys.length === 0){
+    keysWrap.innerHTML = '<div class="empty-admin">no keys issued yet.</div>';
+  } else {
+    keysWrap.innerHTML = '';
+    keys.forEach(k => {
+      const row = document.createElement('div');
+      row.className = 'admin-row';
+      row.innerHTML = `<div><div class="mono">${k.id}</div>
+        <div class="meta">${escapeHtml(k.issuedTo)} · ${new Date(k.issuedAt).toLocaleDateString()}</div></div>
+        <button class="pill-btn danger" data-toggle="${k.id}">Revoke</button>`;
+      keysWrap.appendChild(row);
+    });
+    keysWrap.querySelectorAll('button[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-toggle');
+        await fetch('/api/admin-revoke-key', { method:'POST', headers:{'Content-Type':'application/json','x-admin-pass':adminPassCache}, body:JSON.stringify({key:id}) });
+        showToast(`${id} revoked`);
+        refreshAdmin();
+      });
+    });
+  }
+}
+
+async function manualIssue(){
+  const nameInput = document.getElementById('manualName');
+  const name = nameInput.value.trim() || 'Manual grant';
+  const r = await fetch('/api/admin-issue-key', { method:'POST', headers:{'Content-Type':'application/json','x-admin-pass':adminPassCache}, body:JSON.stringify({name}) });
+  const d = await r.json();
+  document.getElementById('manualResult').innerHTML = `
+    <div class="key-generated"><span>${d.key}</span>
+      <button class="pill-btn ghost" id="copyKeyBtn">Copy</button>
+    </div>`;
+  document.getElementById('copyKeyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(d.key);
+    showToast('copied!');
+  });
+  nameInput.value = '';
+  refreshAdmin();
+}
+</script>
+</body>
+</html>
+
