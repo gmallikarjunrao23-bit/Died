@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Dashboard — KARTHIK×CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div class="loading-shell" id="loadingShell"><span class="mono">// loading dashboard…</span></div>
+
+<div id="pageContent" style="display:none;">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark"></span>KARTHIK<span class="x">×</span>CORE</div>
+    <nav class="app-nav">
+      <a href="profile.html">PROFILE</a>
+      <a href="console.html">CONSOLE</a>
+      <a href="dashboard.html" class="active">DASHBOARD</a>
+    </nav>
+    <div class="status-pip"><span class="dot"></span><span>DASHBOARD</span><button class="signout mono" id="signOutBtn">sign out</button></div>
+  </header>
+
+  <main>
+    <section>
+      <div class="page-head reveal">
+        <div class="tag">[DASHBOARD]</div>
+        <h1>Welcome back.</h1>
+      </div>
+
+      <div class="dash-plan-card reveal">
+        <div class="dash-plan-top">
+          <div>
+            <div class="dash-plan-label" id="dashPlanLabel">—</div>
+            <div class="dash-plan-status" id="dashPlanStatus"><span class="status-dot"></span>Active</div>
+          </div>
+          <a href="upgrade.html" class="btn-primary dash-upgrade-btn">Upgrade</a>
+        </div>
+
+        <div class="dash-expiry" id="dashExpiry">—</div>
+
+        <div class="dash-key-row">
+          <div class="dash-key-label">ACCESS KEY</div>
+          <div class="dash-key-value" id="dashKeyValue">—</div>
+          <button class="copy-btn dash-copy-btn" id="dashCopyKey" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>copy</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dash-remaining-grid reveal">
+        <div class="dash-remaining-card">
+          <div class="dash-remaining-icon">💬</div>
+          <div class="dash-remaining-label">Chats remaining</div>
+          <div class="dash-remaining-value" id="dashMsgRemaining">—</div>
+          <div class="dash-bar-track"><div class="dash-bar-fill" id="dashMsgBar"></div></div>
+        </div>
+        <div class="dash-remaining-card">
+          <div class="dash-remaining-icon">🖼</div>
+          <div class="dash-remaining-label">Images remaining</div>
+          <div class="dash-remaining-value" id="dashImgRemaining">—</div>
+          <div class="dash-bar-track"><div class="dash-bar-fill" id="dashImgBar"></div></div>
+        </div>
+      </div>
+
+      <div class="dash-cta reveal">
+        <a href="console.html" class="btn-primary">Open Console →</a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const PLAN_COLOR = { free:'var(--muted)', basic:'var(--ion)', pro:'var(--signal)', ultimate:'#B980FF' };
+
+function fmtDate(iso){
+  if(!iso) return 'No expiry';
+  return new Date(iso).toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+}
+
+async function loadDashboard(accessKey){
+  const res = await fetch('/api/my-plan', { headers:{ 'x-access-key': accessKey } });
+  if(res.status === 401){ localStorage.removeItem('core_key'); window.location.href = 'index.html'; return; }
+  const data = await res.json();
+
+  document.getElementById('dashPlanLabel').textContent = data.planLabel + ' plan';
+  document.getElementById('dashPlanLabel').style.color = PLAN_COLOR[data.plan] || 'var(--text)';
+  document.getElementById('dashExpiry').textContent = data.expiresAt ? `Renews / expires · ${fmtDate(data.expiresAt)}` : 'No expiry — free plan';
+  document.getElementById('dashKeyValue').textContent = data.accessKey;
+
+  document.getElementById('dashCopyKey').addEventListener('click', () => {
+    navigator.clipboard.writeText(data.accessKey).then(() => showToast('key copied!'));
+  });
+
+  const msgLimit = data.limits.messages;
+  const msgUsed = data.used.messages;
+  const msgRemaining = data.remaining.messages;
+  document.getElementById('dashMsgRemaining').textContent = msgLimit === null ? 'Unlimited' : `${msgRemaining} / ${msgLimit}`;
+  document.getElementById('dashMsgBar').style.width = msgLimit === null ? '100%' : `${Math.max(4, (msgRemaining / msgLimit) * 100)}%`;
+
+  const imgLimit = data.limits.images;
+  const imgRemaining = data.remaining.images;
+  document.getElementById('dashImgRemaining').textContent = imgLimit === null ? 'Unlimited' : (imgLimit === 0 ? 'Not available' : `${imgRemaining} / ${imgLimit}`);
+  document.getElementById('dashImgBar').style.width = imgLimit === null ? '100%' : (imgLimit === 0 ? '0%' : `${Math.max(4, (imgRemaining / imgLimit) * 100)}%`);
+}
+
+(async function(){
+  const key = await requireAccessKey();
+  if(!key) return;
+  document.getElementById('loadingShell').style.display = 'none';
+  document.getElementById('pageContent').style.display = 'block';
+  wireSignOut();
+  document.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+  loadDashboard(key);
+})();
+</script>
+</body>
+</html>
