@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Console — KARTHIK×CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div class="loading-shell" id="loadingShell"><span class="mono">// verifying access…</span></div>
+
+<div id="pageContent" style="display:none;">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark"></span>KARTHIK<span class="x">×</span>CORE</div>
+    <nav class="app-nav">
+      <a href="profile.html">PROFILE</a>
+      <a href="console.html">CONSOLE</a>
+    </nav>
+    <div class="status-pip"><span class="dot"></span><span id="modeStatus">MODE: STANDARD</span><button class="signout mono" id="signOutBtn">sign out</button></div>
+  </header>
+
+  <main>
+    <section class="console-section">
+      <div class="page-head reveal">
+        <div class="tag">[CONSOLE]</div>
+        <h1>Talk to CORE.</h1>
+      </div>
+
+      <div class="terminal reveal">
+        <div class="console-col">
+          <div class="mode-picker" id="modePicker">
+            <button class="mode-trigger" id="modeTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="mode-trigger-dot" id="modeTriggerDot"></span>
+              <span class="mode-trigger-label" id="modeTriggerLabel">STANDARD</span>
+              <svg class="mode-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="mode-dropdown" id="modeTabs" role="listbox"></div>
+          </div>
+          <div class="term-desc" id="modeDesc" style="display:none;"></div>
+
+          <div class="console-main">
+            <div class="term-log" id="chatWindow"><div class="empty-log">// nothing here yet — say something</div></div>
+            <div class="term-foot">
+              <div class="thread-actions">
+                <button class="clear-thread" id="clearThread" type="button">clear chat</button>
+                <button class="export-thread" id="exportThread" type="button">export chat</button>
+              </div>
+              <div class="term-input-row">
+                <input type="text" id="chatInput" placeholder="Message CORE…" autocomplete="off" maxlength="2000">
+                <span class="char-count" id="charCount"></span>
+                <button class="send-btn" id="sendBtn" aria-label="Send">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const MODES = {
+  low:        { label:"LOW",      tier:"Fast & light",     desc:"Quick, punchy answers — one or two lines unless you ask for more." },
+  medium:     { label:"MEDIUM",   tier:"Balanced",          desc:"A middle ground — enough detail to be useful without dragging on." },
+  standard:   { label:"STANDARD", tier:"Default",           desc:"CORE's well-rounded voice — clear explanations, examples when it helps." },
+  high:       { label:"HIGH",     tier:"Deepest reasoning", desc:"Takes its time on harder questions — thorough and precise." },
+  gptlogic:   { label:"SPARK",  tier:"Quick chat",        desc:"Fast, casual replies for everyday questions." },
+  deepai:     { label:"FLUX",   tier:"General purpose",  desc:"A solid all-rounder for anything you throw at it." },
+  gpt3:       { label:"ANCHOR", tier:"Classic style",    desc:"A straightforward, no-frills response style." },
+  deepseekv3: { label:"SURGE",  tier:"Balanced power",   desc:"More capable, still fast — a step up for trickier asks." },
+  qwen:       { label:"PRISM",  tier:"Deep reasoning",   desc:"Thinks through the question before answering." },
+  deepseekr1: { label:"VERTEX", tier:"Better reasoning", desc:"CORE's strongest reasoning — best for hard, multi-step problems." },
+  dalle:      { label:"LENS",   tier:"Image generation", desc:"Describe an image in words and CORE will generate it." }
+};
+
+let currentMode = "standard";
+let accessKey = null;
+let sending = false;
+
+async function apiFetch(url, opts = {}){
+  opts.headers = Object.assign({ 'x-access-key': accessKey }, opts.headers || {});
+  return fetch(url, opts);
+}
+
+function initConsole(){
+  const tabs = document.getElementById('modeTabs');
+  tabs.innerHTML = '';
+  Object.keys(MODES).forEach(key => {
+    const m = MODES[key];
+    const btn = document.createElement('button');
+    btn.className = 'term-tab' + (key===currentMode ? ' active' : '');
+    btn.setAttribute('role', 'option');
+    btn.innerHTML = `<span class="mono">${m.label}</span><span class="tt-sub mono">${m.tier}</span>`;
+    btn.addEventListener('click', () => { switchMode(key); closeModeDropdown(); });
+    tabs.appendChild(btn);
+  });
+  document.getElementById('modeTriggerLabel').textContent = MODES[currentMode].label;
+  document.getElementById('modeDesc').textContent = '// ' + MODES[currentMode].desc;
+  document.getElementById('modeStatus').textContent = 'MODE: ' + MODES[currentMode].label;
+  loadThread(currentMode);
+}
+
+const modePicker = document.getElementById('modePicker');
+const modeTrigger = document.getElementById('modeTrigger');
+function openModeDropdown(){ modePicker.classList.add('open'); modeTrigger.setAttribute('aria-expanded', 'true'); }
+function closeModeDropdown(){ modePicker.classList.remove('open'); modeTrigger.setAttribute('aria-expanded', 'false'); }
+modeTrigger.addEventListener('click', (e) => {
+  e.stopPropagation();
+  modePicker.classList.contains('open') ? closeModeDropdown() : openModeDropdown();
+});
+document.addEventListener('click', (e) => {
+  if(!modePicker.contains(e.target)) closeModeDropdown();
+});
+
+async function switchMode(key){ currentMode = key; initConsole(); }
+
+async function loadThread(mode){
+  const win = document.getElementById('chatWindow');
+  win.innerHTML = '<div class="empty-log">// loading…</div>';
+  try{
+    const res = await apiFetch(`/api/chat?mode=${mode}`);
+    if(res.status === 401){ localStorage.removeItem('core_key'); window.location.href = 'index.html'; return; }
+    const data = await res.json();
+    renderThread(data.history || []);
+  }catch(e){ renderThread([]); }
+}
+
+function makeCopyBtn(getText){
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Copy message');
+  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>copy</span>`;
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(getText()).then(() => showToast('copied!'));
+  });
+  return btn;
+}
+
+function makeDownloadBtn(imageUrl){
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn download-btn';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Download image');
+  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>save</span>`;
+  btn.addEventListener('click', async () => {
+    try{
+      const res = await fetch(imageUrl);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = `core-image-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objUrl);
+      showToast('image saved.');
+    }catch(e){
+      // third-party endpoint may block cross-origin fetch — fall back to
+      // opening it directly so the person can long-press/save manually
+      window.open(imageUrl, '_blank');
+      showToast('opened in new tab — save it from there.');
+    }
+  });
+  return btn;
+}
+
+function renderThread(thread){
+  const win = document.getElementById('chatWindow');
+  if(!thread || thread.length === 0){
+    win.innerHTML = `<div class="empty-log">Ask CORE anything.<span class="empty-log-sub">Running in ${MODES[currentMode].label} mode</span></div>`;
+    return;
+  }
+  win.innerHTML = '';
+  thread.forEach(m => {
+    const isUser = m.role === 'user';
+    const div = document.createElement('div');
+    div.className = 'log-line ' + (isUser ? 'user' : 'bot');
+    if(!isUser && m.image){
+      div.innerHTML = `<span class="log-avatar" aria-hidden="true">C</span><span class="log-image-wrap"><img class="log-image" src="${m.text}" alt="Generated image" loading="lazy"></span>`;
+      const wrap = div.querySelector('.log-image-wrap');
+      wrap.appendChild(makeDownloadBtn(m.text));
+      wrap.appendChild(makeCopyBtn(() => m.text));
+    } else if(isUser){
+      div.innerHTML = `<span class="log-text"></span>`;
+      div.querySelector('.log-text').textContent = m.text;
+      div.appendChild(makeCopyBtn(() => m.text));
+    } else {
+      div.innerHTML = `<span class="log-avatar" aria-hidden="true">C</span><span class="log-body"><span class="log-text"></span></span>`;
+      div.querySelector('.log-text').textContent = m.text;
+      div.querySelector('.log-body').appendChild(makeCopyBtn(() => m.text));
+    }
+    win.appendChild(div);
+  });
+  win.scrollTop = win.scrollHeight;
+}
+
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const charCount = document.getElementById('charCount');
+
+chatInput.addEventListener('input', () => {
+  charCount.textContent = chatInput.value.length > 1500 ? `${chatInput.value.length}/2000` : '';
+});
+sendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
+document.getElementById('clearThread').addEventListener('click', async () => {
+  try{
+    await apiFetch('/api/chat-clear', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ mode: currentMode })
+    });
+    renderThread([]);
+    showToast('chat cleared.');
+  }catch(e){
+    showToast('could not clear chat — try again.');
+  }
+});
+
+document.getElementById('exportThread').addEventListener('click', async () => {
+  try{
+    const res = await apiFetch(`/api/chat?mode=${currentMode}`);
+    const data = await res.json();
+    const history = data.history || [];
+    if(history.length === 0){ showToast('nothing to export yet.'); return; }
+    const lines = history.map(m => `${m.role === 'user' ? 'You' : 'CORE'}: ${m.image ? '[image] ' + m.text : m.text}`);
+    const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `core-chat-${MODES[currentMode].label.toLowerCase()}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('chat exported.');
+  }catch(e){
+    showToast('export failed — try again.');
+  }
+});
+
+async function sendMessage(){
+  const text = chatInput.value.trim();
+  if(!text || sending) return;
+  sending = true;
+  sendBtn.disabled = true;
+  chatInput.value = '';
+  charCount.textContent = '';
+
+  const win = document.getElementById('chatWindow');
+  if(win.querySelector('.empty-log')) win.innerHTML = '';
+  const userDiv = document.createElement('div');
+  userDiv.className = 'log-line user';
+  userDiv.innerHTML = `<span class="log-text"></span>`;
+  userDiv.querySelector('.log-text').textContent = text;
+  win.appendChild(userDiv);
+
+  const typing = document.createElement('div');
+  typing.className = 'log-line bot typing-line-wrap';
+  typing.innerHTML = '<span class="log-avatar" aria-hidden="true">C</span><span class="typing-line"><span></span><span></span><span></span></span>';
+  win.appendChild(typing);
+  win.scrollTop = win.scrollHeight;
+
+  try{
+    const res = await apiFetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ mode: currentMode, message: text })
+    });
+    if(res.status === 401){ localStorage.removeItem('core_key'); window.location.href = 'index.html'; return; }
+    if(res.status === 429){
+      typing.remove();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'log-line bot error';
+      errDiv.innerHTML = `<span class="log-avatar" aria-hidden="true">C</span><span class="log-text">sending too fast — give it a few seconds.</span>`;
+      win.appendChild(errDiv);
+      return;
+    }
+    const data = await res.json();
+    typing.remove();
+    renderThread(data.history || []);
+  }catch(e){
+    typing.remove();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'log-line bot error';
+    errDiv.innerHTML = `<span class="log-avatar" aria-hidden="true">C</span><span class="log-text">signal dropped — check connection and try again.</span>`;
+    win.appendChild(errDiv);
+  } finally {
+    sending = false;
+    sendBtn.disabled = false;
+  }
+}
+
+(async function(){
+  const key = await requireAccessKey();
+  if(!key) return;
+  accessKey = key;
+  document.getElementById('loadingShell').style.display = 'none';
+  document.getElementById('pageContent').style.display = 'block';
+  markActiveNav();
+  wireSignOut();
+  document.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+  initConsole();
+})();
+</script>
+</body>
+</html>
