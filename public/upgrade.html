@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Plans — KARTHIK×CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand"><span class="brand-mark"></span>KARTHIK<span class="x">×</span>CORE</div>
+  <nav class="app-nav">
+    <a href="dashboard.html">DASHBOARD</a>
+    <a href="console.html">CONSOLE</a>
+  </nav>
+</header>
+
+<main>
+  <section>
+    <div class="page-head reveal">
+      <div class="tag">[PLANS]</div>
+      <h1>Pick what fits.</h1>
+      <p style="color:var(--muted); margin-top:14px; max-width:520px;">Upgrades are approved manually — pay via UPI, submit your reference below, and your plan activates once it's checked (usually within a few hours).</p>
+    </div>
+
+    <div class="plan-grid reveal">
+      <div class="plan-card" data-plan="free">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">₹0<span>/mo</span></div>
+        <div class="plan-tagline">Get a feel for CORE, no cost.</div>
+        <ul class="plan-features">
+          <li>LOW &amp; MEDIUM models</li>
+          <li>30 chats / month</li>
+          <li>No image generation</li>
+        </ul>
+        <div class="plan-btn plan-btn-current" data-current-for="free">Included by default</div>
+      </div>
+
+      <div class="plan-card" data-plan="basic">
+        <div class="plan-name">Basic</div>
+        <div class="plan-price">₹99<span>/mo</span></div>
+        <div class="plan-tagline">For regular, everyday use.</div>
+        <ul class="plan-features">
+          <li>6 models — STANDARD, SPARK, FLUX, ANCHOR + Free tier</li>
+          <li>200 chats / month</li>
+          <li>5 images / month</li>
+        </ul>
+        <button class="plan-btn" data-select-plan="basic">Choose Basic</button>
+      </div>
+
+      <div class="plan-card featured" data-plan="pro">
+        <div class="plan-badge">Most popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">₹249<span>/mo</span></div>
+        <div class="plan-tagline">For power users who push CORE harder.</div>
+        <ul class="plan-features">
+          <li>9 models — adds HIGH, SURGE, PRISM reasoning</li>
+          <li>600 chats / month</li>
+          <li>25 images / month</li>
+        </ul>
+        <button class="plan-btn plan-btn-primary" data-select-plan="pro">Choose Pro</button>
+      </div>
+
+      <div class="plan-card" data-plan="ultimate">
+        <div class="plan-name">Ultimate</div>
+        <div class="plan-price">₹399<span>/mo</span></div>
+        <div class="plan-tagline">Everything, no limits.</div>
+        <ul class="plan-features">
+          <li>All 11 models, incl. VERTEX + LENS image gen</li>
+          <li>Unlimited chats</li>
+          <li>Unlimited images</li>
+        </ul>
+        <button class="plan-btn" data-select-plan="ultimate">Choose Ultimate</button>
+      </div>
+    </div>
+
+    <div class="checkout-panel reveal" id="checkoutPanel" style="display:none;">
+      <div class="checkout-head">
+        <div class="tag">[CHECKOUT]</div>
+        <h2>Pay for <span id="checkoutPlanName">—</span></h2>
+        <div class="checkout-timer" id="checkoutTimer">Session expires in 10:00</div>
+      </div>
+
+      <div class="checkout-grid">
+        <div class="checkout-qr-box">
+          <!-- TODO (karthik): replace this placeholder with your real UPI QR
+               code image, e.g. <img src="assets/upi-qr.png" ...> -->
+          <div class="qr-placeholder">
+            <span>QR CODE PLACEHOLDER</span>
+            <span class="qr-note">replace with your real UPI QR image</span>
+          </div>
+          <div class="upi-id-row">UPI ID: <strong>your-upi-id@bank</strong></div>
+        </div>
+
+        <div class="checkout-form">
+          <label class="checkout-label">Your access key</label>
+          <input type="text" id="checkoutKey" placeholder="CORE-XXXX-XXXX" autocomplete="off" maxlength="20">
+
+          <label class="checkout-label">Payment screenshot <span class="req-star">*</span></label>
+          <label class="file-drop" id="fileDrop">
+            <input type="file" id="checkoutFile" accept="image/*" hidden>
+            <span id="fileDropText">Tap to upload the screenshot from your payment app</span>
+            <img id="filePreview" class="file-preview" style="display:none;" alt="Payment screenshot preview">
+          </label>
+
+          <label class="checkout-label">Note (optional)</label>
+          <input type="text" id="checkoutNote" placeholder="Anything the admin should know" maxlength="200">
+
+          <button class="btn-primary checkout-submit" id="checkoutSubmit">I've paid — submit for approval</button>
+          <div class="checkout-msg" id="checkoutMsg"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+    <div class="foot-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </footer>
+</main>
+
+<script src="js/common.js"></script>
+<script>
+let selectedPlan = null;
+let screenshotDataUrl = null;
+let timerInterval = null;
+const PLAN_LABEL = { free:'Free', basic:'Basic', pro:'Pro', ultimate:'Ultimate' };
+
+function startCheckoutTimer(){
+  clearInterval(timerInterval);
+  let secondsLeft = 10 * 60;
+  const timerEl = document.getElementById('checkoutTimer');
+  const submitBtn = document.getElementById('checkoutSubmit');
+  submitBtn.disabled = false;
+  const tick = () => {
+    const m = Math.floor(secondsLeft / 60);
+    const s = String(secondsLeft % 60).padStart(2, '0');
+    if(secondsLeft > 0){
+      timerEl.textContent = `Session expires in ${m}:${s}`;
+      timerEl.classList.remove('expired');
+    } else {
+      timerEl.textContent = 'Session expired — pick a plan again to restart.';
+      timerEl.classList.add('expired');
+      submitBtn.disabled = true;
+      clearInterval(timerInterval);
+      return;
+    }
+    secondsLeft--;
+  };
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+document.querySelectorAll('[data-select-plan]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedPlan = btn.getAttribute('data-select-plan');
+    document.getElementById('checkoutPlanName').textContent = PLAN_LABEL[selectedPlan];
+    document.getElementById('checkoutPanel').style.display = 'block';
+    document.getElementById('checkoutPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+    document.getElementById('checkoutMsg').textContent = '';
+    startCheckoutTimer();
+  });
+});
+
+// pre-fill the access key field if they already have one saved on this device
+const savedKey = localStorage.getItem('core_key');
+if(savedKey) document.getElementById('checkoutKey').value = savedKey;
+
+document.getElementById('checkoutFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 5 * 1024 * 1024){
+    document.getElementById('checkoutMsg').textContent = 'that image is too large — try a smaller screenshot.';
+    document.getElementById('checkoutMsg').className = 'checkout-msg error';
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    screenshotDataUrl = reader.result;
+    const preview = document.getElementById('filePreview');
+    preview.src = screenshotDataUrl;
+    preview.style.display = 'block';
+    document.getElementById('fileDropText').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('checkoutSubmit').addEventListener('click', async () => {
+  const key = document.getElementById('checkoutKey').value.trim().toUpperCase();
+  const note = document.getElementById('checkoutNote').value.trim();
+  const msg = document.getElementById('checkoutMsg');
+  if(!key){ msg.textContent = 'enter your access key first.'; msg.className = 'checkout-msg error'; return; }
+  if(!selectedPlan){ msg.textContent = 'pick a plan above first.'; msg.className = 'checkout-msg error'; return; }
+  if(!screenshotDataUrl){ msg.textContent = 'upload your payment screenshot first.'; msg.className = 'checkout-msg error'; return; }
+
+  msg.textContent = 'submitting…';
+  msg.className = 'checkout-msg';
+  try{
+    const res = await fetch('/api/request-upgrade', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ key, plan: selectedPlan, note, screenshot: screenshotDataUrl })
+    });
+    const data = await res.json();
+    if(res.ok){
+      msg.textContent = '✓ submitted — waiting for approval. This usually takes a few hours. Check dashboard.html once it\'s approved.';
+      msg.className = 'checkout-msg success';
+      document.getElementById('checkoutSubmit').disabled = true;
+      clearInterval(timerInterval);
+    } else {
+      const errMap = {
+        'unknown or inactive access key': 'that access key wasn\'t recognized — double-check it.',
+        'payment screenshot required': 'please upload a screenshot.',
+        'screenshot too large — try a smaller image': 'that image is too large — try a smaller screenshot.',
+      };
+      msg.textContent = errMap[data.error] || 'something went wrong — try again.';
+      msg.className = 'checkout-msg error';
+    }
+  }catch(e){
+    msg.textContent = 'connection error — try again.';
+    msg.className = 'checkout-msg error';
+  }
+});
+
+document.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+</script>
+</body>
+</html>
+
