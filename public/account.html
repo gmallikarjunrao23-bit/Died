@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Sign in — KARTHIK×CORE</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="acct-tabs">
+      <button class="acct-tab active" id="tabLogin" type="button">Log in</button>
+      <button class="acct-tab" id="tabSignup" type="button">Sign up</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="gate-title">Welcome <span>back</span>.</div>
+      <div class="gate-sub">// log in to reach your console, chats, and plan.</div>
+      <input type="email" class="key-input" id="loginEmail" placeholder="EMAIL" autocomplete="email">
+      <input type="password" class="key-input" id="loginPassword" placeholder="PASSWORD" autocomplete="current-password" style="margin-top:10px;">
+      <button class="btn-primary gate-btn" id="loginBtn">Log in</button>
+      <div class="gate-error" id="loginError"></div>
+    </div>
+
+    <div id="signupForm" style="display:none;">
+      <div class="gate-title">Create your <span>account</span>.</div>
+      <div class="gate-sub">// starts you on the Free plan — upgrade any time.</div>
+      <input type="text" class="key-input" id="signupName" placeholder="YOUR NAME" autocomplete="name">
+      <input type="email" class="key-input" id="signupEmail" placeholder="EMAIL" autocomplete="email" style="margin-top:10px;">
+      <input type="password" class="key-input" id="signupPassword" placeholder="PASSWORD (8+ CHARACTERS)" autocomplete="new-password" style="margin-top:10px;">
+      <button class="btn-primary gate-btn" id="signupBtn">Create account</button>
+      <div class="gate-error" id="signupError"></div>
+    </div>
+
+    <div class="gate-divider">or</div>
+    <a href="index.html" class="wa-btn">← use an access key instead</a>
+    <div class="req-note">Already have a CORE access key from an invite? Go back and enter it directly — no account needed.</div>
+  </div>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+document.getElementById('tabLogin').addEventListener('click', () => {
+  document.getElementById('tabLogin').classList.add('active');
+  document.getElementById('tabSignup').classList.remove('active');
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('signupForm').style.display = 'none';
+});
+document.getElementById('tabSignup').addEventListener('click', () => {
+  document.getElementById('tabSignup').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('signupForm').style.display = 'block';
+  document.getElementById('loginForm').style.display = 'none';
+});
+
+function goToDashboard(accessKey){
+  localStorage.setItem('core_key', accessKey);
+  window.location.href = 'dashboard.html';
+}
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  err.textContent = 'checking…';
+  try{
+    const res = await fetch('/api/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if(res.ok){ goToDashboard(data.accessKey); }
+    else { err.textContent = res.status === 429 ? 'too many attempts — wait a bit.' : (data.error || 'login failed.'); }
+  }catch(e){ err.textContent = 'connection error — try again.'; }
+});
+
+document.getElementById('signupBtn').addEventListener('click', async () => {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const err = document.getElementById('signupError');
+  if(!name){ err.textContent = 'enter your name.'; return; }
+  if(password.length < 8){ err.textContent = 'password must be at least 8 characters.'; return; }
+  err.textContent = 'creating account…';
+  try{
+    const res = await fetch('/api/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if(res.ok){ goToDashboard(data.accessKey); }
+    else { err.textContent = res.status === 429 ? 'too many attempts — wait a bit.' : (data.error || 'signup failed.'); }
+  }catch(e){ err.textContent = 'connection error — try again.'; }
+});
+</script>
+</body>
+</html>
+
