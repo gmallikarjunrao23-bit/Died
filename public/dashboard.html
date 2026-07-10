@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Dashboard — KARTHIK×CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600,700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/core.css">
+</head>
+<body>
+
+<div class="loading-shell" id="loadingShell"><span class="mono">// loading dashboard…</span></div>
+
+<div id="pageContent" style="display:none;">
+  <header class="app-header">
+    <div class="brand"><span class="brand-mark"></span>KARTHIK<span class="x">×</span>CORE</div>
+    <nav class="app-nav">
+      <a href="profile.html">PROFILE</a>
+      <a href="console.html">CONSOLE</a>
+      <a href="dashboard.html" class="active">DASHBOARD</a>
+    </nav>
+    <div class="user-menu" id="userMenu">
+      <button class="user-menu-trigger" id="userMenuTrigger" type="button">
+        <span class="dot"></span><span>DASHBOARD</span>
+        <svg class="user-menu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <div class="user-menu-dropdown" id="userMenuDropdown">
+        <a href="dashboard.html" class="user-menu-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          Dashboard
+        </a>
+        <a href="console.html" class="user-menu-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          Console
+        </a>
+        <div class="user-menu-divider"></div>
+        <button class="user-menu-item user-menu-signout" id="signOutBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Sign out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="page-head reveal">
+        <div class="tag">[DASHBOARD]</div>
+        <h1>Welcome back.</h1>
+      </div>
+
+      <div class="dash-upgrade-banner reveal" id="dashUpgradeBanner" style="display:none;">
+        🎉 Your plan was just upgraded to <strong id="dashUpgradeBannerPlan">—</strong>!
+      </div>
+
+      <div class="dash-plan-card reveal">
+        <div class="dash-plan-top">
+          <div>
+            <div class="dash-plan-label" id="dashPlanLabel">—</div>
+            <div class="dash-plan-status" id="dashPlanStatus"><span class="status-dot"></span>Active</div>
+          </div>
+          <a href="upgrade.html" class="btn-primary dash-upgrade-btn">Upgrade</a>
+        </div>
+
+        <div class="dash-expiry" id="dashExpiry">—</div>
+
+        <div class="dash-key-row">
+          <div class="dash-key-label">ACCESS KEY</div>
+          <div class="dash-key-value" id="dashKeyValue">—</div>
+          <button class="copy-btn dash-copy-btn" id="dashCopyKey" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>copy</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dash-remaining-grid reveal">
+        <div class="dash-remaining-card">
+          <div class="dash-remaining-icon">💬</div>
+          <div class="dash-remaining-label">Chats remaining</div>
+          <div class="dash-remaining-value" id="dashMsgRemaining">—</div>
+          <div class="dash-bar-track"><div class="dash-bar-fill" id="dashMsgBar"></div></div>
+        </div>
+        <div class="dash-remaining-card">
+          <div class="dash-remaining-icon">🖼</div>
+          <div class="dash-remaining-label">Images remaining</div>
+          <div class="dash-remaining-value" id="dashImgRemaining">—</div>
+          <div class="dash-bar-track"><div class="dash-bar-fill" id="dashImgBar"></div></div>
+        </div>
+      </div>
+
+      <div class="dash-cta reveal">
+        <a href="console.html" class="btn-primary">Open Console →</a>
+      </div>
+
+      <div class="dash-profile-card reveal" id="dashProfileCard" style="display:none;">
+        <h3 class="dash-profile-title">Account</h3>
+        <div class="dash-profile-row">
+          <div class="dash-profile-avatar" id="dashAvatarInitial">?</div>
+          <div>
+            <div class="dash-profile-name" id="dashAccountName">—</div>
+            <div class="dash-profile-email" id="dashAccountEmail">—</div>
+          </div>
+        </div>
+
+        <label class="checkout-label">Display name</label>
+        <div class="dash-inline-form">
+          <input type="text" id="editNameInput" maxlength="60">
+          <button class="pill-btn" id="saveNameBtn">Save</button>
+        </div>
+        <div class="dash-profile-msg" id="nameMsg"></div>
+
+        <label class="checkout-label" style="margin-top:18px;">Change password</label>
+        <input type="password" id="currentPasswordInput" placeholder="Current password">
+        <input type="password" id="newPasswordInput" placeholder="New password (8+ characters)" style="margin-top:8px;">
+        <button class="pill-btn" id="savePasswordBtn" style="margin-top:10px;">Update password</button>
+        <div class="dash-profile-msg" id="passwordMsg"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-brand">KARTHIK×CORE — private build, all rights reserved.</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script src="js/common.js"></script>
+<script>
+const PLAN_COLOR = { free:'var(--muted)', basic:'var(--ion)', pro:'var(--signal)', ultimate:'#B980FF' };
+
+function fmtDate(iso){
+  if(!iso) return 'No expiry';
+  return new Date(iso).toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+}
+
+const userMenu = document.getElementById('userMenu');
+const userMenuTrigger = document.getElementById('userMenuTrigger');
+userMenuTrigger.addEventListener('click', (e) => {
+  e.stopPropagation();
+  userMenu.classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if(!userMenu.contains(e.target)) userMenu.classList.remove('open');
+});
+
+async function loadDashboard(accessKey){
+  const res = await fetch('/api/my-plan', { headers:{ 'x-access-key': accessKey } });
+  if(res.status === 401){ localStorage.removeItem('core_key'); window.location.href = 'index.html'; return; }
+  const data = await res.json();
+
+  document.getElementById('dashPlanLabel').textContent = data.planLabel + ' plan';
+  document.getElementById('dashPlanLabel').style.color = PLAN_COLOR[data.plan] || 'var(--text)';
+  document.getElementById('dashExpiry').textContent = data.expiresAt ? `Renews / expires · ${fmtDate(data.expiresAt)}` : 'No expiry — free plan';
+  document.getElementById('dashKeyValue').textContent = data.accessKey;
+
+  if(data.justUpgraded){
+    document.getElementById('dashUpgradeBannerPlan').textContent = data.planLabel;
+    document.getElementById('dashUpgradeBanner').style.display = 'block';
+  }
+
+  document.getElementById('dashCopyKey').addEventListener('click', () => {
+    navigator.clipboard.writeText(data.accessKey).then(() => showToast('key copied!'));
+  });
+
+  const msgLimit = data.limits.messages;
+  const msgUsed = data.used.messages;
+  const msgRemaining = data.remaining.messages;
+  document.getElementById('dashMsgRemaining').textContent = msgLimit === null ? 'Unlimited' : `${msgRemaining} / ${msgLimit}`;
+  document.getElementById('dashMsgBar').style.width = msgLimit === null ? '100%' : `${Math.max(4, (msgRemaining / msgLimit) * 100)}%`;
+
+  const imgLimit = data.limits.images;
+  const imgRemaining = data.remaining.images;
+  document.getElementById('dashImgRemaining').textContent = imgLimit === null ? 'Unlimited' : (imgLimit === 0 ? 'Not available' : `${imgRemaining} / ${imgLimit}`);
+  document.getElementById('dashImgBar').style.width = imgLimit === null ? '100%' : (imgLimit === 0 ? '0%' : `${Math.max(4, (imgRemaining / imgLimit) * 100)}%`);
+
+  loadAccount(accessKey);
+}
+
+async function loadAccount(accessKey){
+  const res = await fetch('/api/account', { headers:{ 'x-access-key': accessKey } });
+  const data = await res.json();
+  if(!data.hasAccount) return; // invite-only access key, not a signed-up account — no profile section to show
+
+  document.getElementById('dashProfileCard').style.display = 'block';
+  document.getElementById('dashAvatarInitial').textContent = data.name.charAt(0).toUpperCase();
+  document.getElementById('dashAccountName').textContent = data.name;
+  document.getElementById('dashAccountEmail').textContent = data.email;
+  document.getElementById('editNameInput').value = data.name;
+
+  document.getElementById('saveNameBtn').addEventListener('click', async () => {
+    const name = document.getElementById('editNameInput').value.trim();
+    const msg = document.getElementById('nameMsg');
+    if(!name){ msg.textContent = 'name can\'t be empty.'; msg.className = 'dash-profile-msg error'; return; }
+    const r = await fetch('/api/account/name', {
+      method:'POST', headers:{'Content-Type':'application/json','x-access-key':accessKey},
+      body: JSON.stringify({ name })
+    });
+    if(r.ok){
+      msg.textContent = 'saved.'; msg.className = 'dash-profile-msg success';
+      document.getElementById('dashAccountName').textContent = name;
+      document.getElementById('dashAvatarInitial').textContent = name.charAt(0).toUpperCase();
+    } else {
+      msg.textContent = 'could not save — try again.'; msg.className = 'dash-profile-msg error';
+    }
+  });
+
+  document.getElementById('savePasswordBtn').addEventListener('click', async () => {
+    const currentPassword = document.getElementById('currentPasswordInput').value;
+    const newPassword = document.getElementById('newPasswordInput').value;
+    const msg = document.getElementById('passwordMsg');
+    if(newPassword.length < 8){ msg.textContent = 'new password must be at least 8 characters.'; msg.className = 'dash-profile-msg error'; return; }
+    const r = await fetch('/api/account/password', {
+      method:'POST', headers:{'Content-Type':'application/json','x-access-key':accessKey},
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    const rd = await r.json();
+    if(r.ok){
+      msg.textContent = 'password updated.'; msg.className = 'dash-profile-msg success';
+      document.getElementById('currentPasswordInput').value = '';
+      document.getElementById('newPasswordInput').value = '';
+    } else {
+      msg.textContent = rd.error || 'could not update password.'; msg.className = 'dash-profile-msg error';
+    }
+  });
+}
+
+(async function(){
+  const key = await requireAccessKey();
+  if(!key) return;
+  document.getElementById('loadingShell').style.display = 'none';
+  document.getElementById('pageContent').style.display = 'block';
+  wireSignOut();
+  document.querySelectorAll('.reveal').forEach(e => e.classList.add('in'));
+  loadDashboard(key);
+})();
+</script>
+</body>
+</html>
+
